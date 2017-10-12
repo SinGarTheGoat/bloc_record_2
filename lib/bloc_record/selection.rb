@@ -161,6 +161,7 @@ module Selection
 
 
   def order(*args)
+
     if args.count > 1
       order = args.join(",")
     else
@@ -189,31 +190,6 @@ private
   end
 end
 
-
-#
-# class Person
-#   initialize(first_name, last_name)
-#     @first_name = first_name
-#     @last_name  = last_name
-#   end
-#
-#   def full_name
-#     return "#{@first_name} #{@last_name}"
-#   end
-#
-#   def self.population
-#     return 8_000_000_000
-#   end
-# end
-#
-# bob = Person.new("Bob", "Smith")
-# puts bob.full_name
-#
-# puts bob.population # This fails
-#
-# puts Person.population
-#
-# puts Person.full_name # This fails
 
 #
 # Entry.order(:name, {phone_number: :desc})
