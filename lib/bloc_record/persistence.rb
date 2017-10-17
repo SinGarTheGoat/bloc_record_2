@@ -38,6 +38,10 @@ module Persistence
     self.class.update(self.id, updates)
   end
   module ClassMethods
+    def update_all(updates)
+      update(nil, updates)
+    end
+
     def create(attrs)
       attrs = BlocRecord::Utility.convert_keys(attrs)
       attrs.delete "id"
