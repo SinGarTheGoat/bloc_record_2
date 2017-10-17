@@ -30,6 +30,15 @@ module Selection
 
   end
 
+  def find_by(attribute, value)
+   row = connection.get_first_row <<-SQL
+     SELECT #{columns.join ","} FROM #{table}
+     WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
+   SQL
+
+   init_object_from_row(row)
+ end
+
   def method_missing(m, *args, &block)
     if m == :find_by
       self.send(:find_by_internal, args[0], args[1])
