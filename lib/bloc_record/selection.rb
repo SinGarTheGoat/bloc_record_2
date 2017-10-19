@@ -204,10 +204,7 @@ module Selection
             x = x.gsub(/}/, '')
             if extra == TRUE
               x = x.gsub(/:/, '')
-
             end
-
-
             puts x
             final_array << x
           when Symbol
