@@ -98,6 +98,9 @@ module Selection
     rows = connection.execute(sql)
     strang = ''
     y=1
+    #turn into objects using init_object_from_row, then yield the batch
+
+
     rows.each do |x|
 
         yield init_object_from_row(strang)
