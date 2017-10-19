@@ -31,17 +31,21 @@ module Selection
   end
 
   def find_by(attribute, value)
-   row = connection.get_first_row <<-SQL
-     SELECT #{columns.join ","} FROM #{table}
-     WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
-   SQL
+    row = connection.get_first_row <<-SQL
+    SELECT #{columns.join ","} FROM #{table}
+    WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
+    SQL
 
-   init_object_from_row(row)
- end
+    init_object_from_row(row)
+  end
+
+
 
   def method_missing(m, *args, &block)
-    if m == :find_by
-      self.send(:find_by_internal, args[0], args[1])
+    matches = m.match(/^find_by_(.*)$/)
+    if matches
+      field_name = matches.captures[0]
+      find_by(field_name, args[0])
     else
       super
     end
@@ -70,180 +74,227 @@ module Selection
     # end
 
   end
-# I want to submit this for chapter 3
-#stupid git     dkwoapmfkwel;   ckdlsmkclsncls knxklsdafjkl SPK
-  def find_each(attribute, value, start: 0, batch_size: 1)
+  # I want to submit this for chapter 3
+  #stupid git     dkwoapmfkwel;   ckdlsmkclsncls knxklsdafjkl SPK
+  def find_each(start: 0, batch_size: 100)
 
     sql = <<-SQL
     SELECT #{columns.join ","} FROM #{table}
-    WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
-    ORDER BY #{attribute}
-    OFFSET #{start} ROWS
-    FETCH NEXT #{batch_size} ROWS ONLY
+    LIMIT #{batch_size} OFFSET #{start}
     SQL
 
     rows = connection.execute(sql)
     rows.each do |x|
-      yield x
+      yield init_object_from_row(x)
     end
   end
 
-  def find_in_batches(attribute, value, batch_size)
-    Contact.find_in_batches(start: 4000, batch_size: 2000) do |contacts, batch|
-      contacts.each { |contact| contact.check_if_naughty_or_nice }
-    end
-  end
-
-  def take(num=1)
-    if num > 1
-      rows = connection.execute <<-SQL
-      SELECT #{columns.join ","} FROM #{table}
-      ORDER BY random()
-      LIMIT #{num};
-      SQL
-
-      return rows_to_array(rows)
-    else
-      return  take_one
-    end
-  end
-
-  def take_one
-    row = connection.get_first_row <<-SQL
-    SELECT #{columns.join ","} FROM #{table}
-    ORDER BY random()
-    LIMIT 1;
-    SQL
-
-    init_object_from_row(row)
-  end
-
-
-  def first
-    row = connection.get_first_row <<-SQL
-    SELECT #{columns.join ","} FROM #{table}
-    ORDER BY id ASC LIMIT 1;
-    SQL
-
-    init_object_from_row(row)
-  end
-
-  def last
-    row = connection.get_first_row <<-SQL
-    SELECT #{columns.join ","} FROM #{table}
-    ORDER BY id DESC LIMIT 1;
-    SQL
-
-    init_object_from_row(row)
-  end
-  def all
-    rows = connection.execute <<-SQL
-    SELECT #{columns.join ","} FROM #{table};
-    SQL
-
-    rows_to_array(rows)
-  end
-
-  def where(*args)
-    if args.count > 1
-      expression = args.shift
-      params = args
-    else
-      case args.first
-      when String
-        expression = args.first
-      when Hash
-        expression_hash = BlocRecord::Utility.convert_keys(args.first)
-        expression = expression_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")
-      end
-    end
-
+  def find_in_batches(start: 0, batch_size: 100)
     sql = <<-SQL
     SELECT #{columns.join ","} FROM #{table}
-    WHERE #{expression};
+    LIMIT #{batch_size} OFFSET #{start}
     SQL
 
-    rows = connection.execute(sql, params)
-    rows_to_array(rows)
-  end
+    rows = connection.execute(sql)
+    strang = ''
+    y=1
+    rows.each do |x|
+      y= 1+y
+      strang << x
+      if batch_size / y == 1
+        yield init_object_from_row(strang)
+      end
 
-
-
-  def order(*args)
-
-    if args.count > 1
-      order = args.join(",")
-    else
-      order = args.first.to_s
+      # Contact.find_in_batches(start: 4000, batch_size: 2000) do |contacts, batch|
+      #   contacts.each do |contact|
+      #
+      #     contact.check_if_naughty_or_nice
+      #   end
+      # end
     end
 
-    rows = connection.execute <<-SQL
-    SELECT * FROM #{table}
-    ORDER BY #{order};
-    SQL
-    rows_to_array(rows)
-  end
-
-
-  def join(*args)
-    if args.count > 1
-      joins = args.map { |arg| "INNER JOIN #{arg} ON #{arg}.#{table}_id = #{table}.id"}.join(" ")
-      rows = connection.execute <<-SQL
-        SELECT * FROM #{table} #{joins}
-      SQL
-    else
-      case args.first
-      when String
+    def take(num=1)
+      if num > 1
         rows = connection.execute <<-SQL
-          SELECT * FROM #{table} #{BlocRecord::Utility.sql_strings(args.first)};
+        SELECT #{columns.join ","} FROM #{table}
+        ORDER BY random()
+        LIMIT #{num};
         SQL
-      when Symbol
-        rows = connection.execute <<-SQL
-          SELECT * FROM #{table}
-          INNER JOIN #{args.first} ON #{args.first}.#{table}_id = #{table}.id
-        SQL
+
+        return rows_to_array(rows)
+      else
+        return  take_one
       end
     end
 
-    rows_to_array(rows)
-  end
+    def take_one
+      row = connection.get_first_row <<-SQL
+      SELECT #{columns.join ","} FROM #{table}
+      ORDER BY random()
+      LIMIT 1;
+      SQL
 
-private
-  def init_object_from_row(row)
-    if row
-      data = Hash[columns.zip(row)]
-      new(data)
+      init_object_from_row(row)
     end
-  end
-
-  def rows_to_array(rows)
-    rows.map { |row| new(Hash[columns.zip(row)]) }
-  end
-end
 
 
-#
-# Entry.order(:name, {phone_number: :desc})
-#
-# SELECT columns
-# FROM entry
-# ORDER BY name, phone_number desc
-#
-# # or
-# Entry.order({name: :asc, phone_number: :desc})
-#
-# SELECT columns
-# FROM entry
-# ORDER BY name asc, phone_number desc
-#
-# # or
-# Entry.order("name ASC, phone_number DESC")
-#
-# SELECT columns
-# FROM entry
-# ORDER BY name ASC, phone_number DESC
-#
-# # or
-# Entry.order("name ASC", "phone_number DESC")
-#
-# ORDER BY name, phone_number desc
+    def first
+      row = connection.get_first_row <<-SQL
+      SELECT #{columns.join ","} FROM #{table}
+      ORDER BY id ASC LIMIT 1;
+      SQL
+
+      init_object_from_row(row)
+    end
+
+    def last
+      row = connection.get_first_row <<-SQL
+      SELECT #{columns.join ","} FROM #{table}
+      ORDER BY id DESC LIMIT 1;
+      SQL
+
+      init_object_from_row(row)
+    end
+    def all
+      rows = connection.execute <<-SQL
+      SELECT #{columns.join ","} FROM #{table};
+      SQL
+
+      rows_to_array(rows)
+    end
+
+    def where(*args)
+      if args.count > 1
+        expression = args.shift
+        params = args
+      else
+        case args.first
+        when String
+          expression = args.first
+        when Hash
+          expression_hash = BlocRecord::Utility.convert_keys(args.first)
+          expression = expression_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")
+        end
+      end
+
+      sql = <<-SQL
+      SELECT #{columns.join ","} FROM #{table}
+      WHERE #{expression};
+      SQL
+
+      rows = connection.execute(sql, params)
+      rows_to_array(rows)
+    end
+
+
+
+    def order(*args)
+      final_array = []
+      args.each do |x|
+        case x
+        when Hash
+          puts "hash  kik #{x}"
+          if x.to_s.include? ","
+            extra = TRUE
+          end
+          puts x
+          x = x.to_s
+          x = x.gsub(/{:/, ' ')
+            x = x.gsub(/=>:/, ' ')
+            x= x.gsub(/,/,',')
+            x = x.gsub(/}/, '')
+            if extra == TRUE
+              x = x.gsub(/:/, '')
+
+            end
+
+
+            puts x
+            final_array << x
+          when Symbol
+            puts "Symbol #{x}"
+            x = x.to_s
+            final_array << x
+          when String
+            puts "String #{x}"
+            final_array << x
+          when Numeriac
+            x.to_s
+          end
+        end
+
+        if final_array.count > 1
+          order = final_array.join(",")
+        else
+          order = final_array.first.to_s
+        end
+        rows = connection.execute <<-SQL
+        SELECT * FROM #{table}
+        ORDER BY #{order};
+        SQL
+        rows_to_array(rows)
+      end
+
+
+      def join(*args)
+        if args.count > 1
+          joins = args.map { |arg| "INNER JOIN #{arg} ON #{arg}.#{table}_id = #{table}.id"}.join(" ")
+          rows = connection.execute <<-SQL
+          SELECT * FROM #{table} #{joins}
+          SQL
+        else
+          case args.first
+          when String
+            rows = connection.execute <<-SQL
+            SELECT * FROM #{table} #{BlocRecord::Utility.sql_strings(args.first)};
+            SQL
+          when Symbol
+            rows = connection.execute <<-SQL
+            SELECT * FROM #{table}
+            INNER JOIN #{args.first} ON #{args.first}.#{table}_id = #{table}.id
+            SQL
+          end
+        end
+
+        rows_to_array(rows)
+      end
+
+      private
+      def init_object_from_row(row)
+        if row
+          data = Hash[columns.zip(row)]
+          new(data)
+        end
+      end
+
+      def rows_to_array(rows)
+        rows.map { |row| new(Hash[columns.zip(row)]) }
+      end
+    end
+
+
+    #
+    # Entry.order(:name, {phone_number: :desc})
+    #
+    # SELECT columns
+    # FROM entry
+    # ORDER BY name, phone_number desc
+    #
+    # # or
+    # Entry.order({name: :asc, phone_number: :desc})
+    #
+    # SELECT columns
+    # FROM entry
+    # ORDER BY name asc, phone_number desc
+    #
+    # # or
+    # Entry.order("name ASC, phone_number DESC")
+    #
+    # SELECT columns
+    # FROM entry
+    # ORDER BY name ASC, phone_number DESC
+    #
+    # # or
+    # Entry.order("name ASC", "phone_number DESC")
+    #
+    # ORDER BY name, phone_number desc
