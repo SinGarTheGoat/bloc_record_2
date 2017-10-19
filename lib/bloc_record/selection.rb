@@ -30,14 +30,14 @@ module Selection
 
   end
 
-  def find_by(attribute, value)
-    row = connection.get_first_row <<-SQL
-    SELECT #{columns.join ","} FROM #{table}
-    WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
-    SQL
-
-    init_object_from_row(row)
-  end
+  # def find_by(attribute, value)
+  #   row = connection.get_first_row <<-SQL
+  #   SELECT #{columns.join ","} FROM #{table}
+  #   WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
+  #   SQL
+  #
+  #   init_object_from_row(row)
+  # end
 
 
 
@@ -51,7 +51,7 @@ module Selection
     end
   end
 
-  def find_by_internal(attribute, value)
+  def find_by(attribute, value)
     puts "find_by_internal"
     sql = <<-SQL
     SELECT #{columns.join ","} FROM #{table}
@@ -99,11 +99,10 @@ module Selection
     strang = ''
     y=1
     rows.each do |x|
-      y= 1+y
-      strang << x
-      if batch_size / y == 1
+
         yield init_object_from_row(strang)
       end
+      y= 1+y
 
       # Contact.find_in_batches(start: 4000, batch_size: 2000) do |contacts, batch|
       #   contacts.each do |contact|
@@ -253,6 +252,14 @@ module Selection
             SELECT * FROM #{table}
             INNER JOIN #{args.first} ON #{args.first}.#{table}_id = #{table}.id
             SQL
+          when Hash
+            args.to_s
+            x = x.to_s
+            x = x.gsub(/{:/, '')
+            x = x.gsub(/}/, '')
+            arg_ray = x.split('=>:')
+            arg_ray[0] = arg_ray[0].gsub(/,/,'')
+            join(arg_ray[0], arg_ray[1])
           end
         end
 
