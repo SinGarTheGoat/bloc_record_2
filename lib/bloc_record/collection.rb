@@ -6,4 +6,14 @@ module BlocRecord
       # #6
       self.any? ? self.first.class.update(ids, updates) : false
     end
+
+
+
+#Person.where(first_name: 'John').take;
+
+    def took(arg)
+
+
+
+    end
   end

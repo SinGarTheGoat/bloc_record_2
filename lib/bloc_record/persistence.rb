@@ -58,6 +58,10 @@ module Persistence
     end
 
     def update(ids, updates)
+      # ids = [1, 2]
+      # updates = [{..}, {..}]
+
+      
 
       updates = BlocRecord::Utility.convert_keys(updates)
       updates.delete "id"
@@ -85,7 +89,7 @@ module Persistence
       matches = m.match(/^update_(.*)$/)
       if matches
         field_name = matches.captures[0]
-        find_by(field_name, args[0])
+        update_attribute(field_name, args[0])
       else
         super
       end
