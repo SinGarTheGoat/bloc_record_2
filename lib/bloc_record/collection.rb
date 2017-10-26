@@ -16,5 +16,7 @@ module BlocRecord
 
 
     end
+
+    #add a destrya all method coming out of this class
   end
 end

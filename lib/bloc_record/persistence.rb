@@ -149,7 +149,7 @@ module Persistence
         condition_string = condition_string.gsub(/[?]/, '')
         connection.execute <<-SQL
         DELETE FROM #{table}
-        WHERE #{conditions_hash};
+        WHERE #{condition_string};
         SQL
       end
       true
