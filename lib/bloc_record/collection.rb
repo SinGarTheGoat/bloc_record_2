@@ -17,7 +17,7 @@ module BlocRecord
     #Person.where(first_name: 'John').take;
 
     def take(n=1)
-      super(n)
+      self.take
 
     end
 
