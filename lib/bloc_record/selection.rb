@@ -96,6 +96,14 @@ module Selection
     SQL
 
     rows = connection.execute(sql)
+
+    # Changes the rows into a set of objects
+    # yield that set resulting from rows_to_arry
+
+
+
+
+
     strang = ''
     y=1
     #turn into objects using init_object_from_row, then yield the batch
