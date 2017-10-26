@@ -17,6 +17,7 @@ module BlocRecord
     #Person.where(first_name: 'John').take;
 
     def take(n=1)
+      #just return n number of entries
       self.take
 
     end
@@ -32,7 +33,7 @@ module BlocRecord
   def not(*args)
     self.select{ |item|
       not args[0].map{ |key,value|
-      item.send(key) == value}.all? #any? and /or
+      item.send(key) == value}.any? #any? and /or
       }
   end
 
