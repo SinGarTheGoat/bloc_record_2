@@ -96,7 +96,7 @@ module Persistence
         field_name = matches.captures[0]
         update_attribute(field_name, args[0])
       else
-        super
+        #super
       end
     end
 
