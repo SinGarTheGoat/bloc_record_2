@@ -62,7 +62,7 @@ module Persistence
       new(data)
     end
 
-    def update(ids, updates)
+    def update_one(ids, updates)
       # ids = [1, 2]
       # updates = [{..}, {..}]
 
@@ -88,6 +88,14 @@ module Persistence
       true
     end
 
+
+    def update(ids, updates)
+      update_array =  ids.zip(updates)
+      update_array.each do |x|
+        update_one(x[0],x[1])
+      end
+
+    end
 
 
     def method_missing(m, *args, &block)

@@ -86,6 +86,7 @@ module Selection
   end
 
   def take(num=1)
+    puts "in selection"
     if num > 1
       rows = connection.execute <<-SQL
       SELECT #{columns.join ","} FROM #{table}
@@ -136,6 +137,7 @@ module Selection
   end
 
   def where(*args)
+    puts" in selection"
     if args.count > 1
       expression = args.shift
       params = args
