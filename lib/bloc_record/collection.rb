@@ -25,17 +25,18 @@ module BlocRecord
     def where(*args)
       self.select{ |item|
 
-        args[0].map{ |key,value|
-          item.send(key) == value}.all?
-        }
+      args[0].map{ |key,value|
+        item.send(key) == value}.all?
+      }
 
-      end
-
-      def not(*args)
-        self.select{ |item|
-          not args[0].map{ |key,value|
-            item.send(key) == value}.any? #any? and /or
-          }
-        end
-      end
     end
+
+    def not(*args)
+      self.select{ |item|
+        not args[0].map{ |key,value|
+          item.send(key) == value}.any? #any? and /or
+        }
+    end
+
+  end
+end
