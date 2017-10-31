@@ -52,14 +52,23 @@ module Selection
   end
 
   def find_by(attribute, value)
-    puts "find_by_internal"
-    sql = <<-SQL
+
+    row = connection.get_first_row <<-SQL
     SELECT #{columns.join ","} FROM #{table}
     WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
     SQL
 
-    rows = connection.execute(sql)
-    return rows_to_array(rows)
+    init_object_from_row(row)
+
+
+    # puts "find_by_internal"
+    # sql = <<-SQL
+    # SELECT #{columns.join ","} FROM #{table}
+    # WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
+    # SQL
+    #
+    # rows = connection.execute(sql)
+    # return rows_to_array(rows)
 
     # Contact.find_each do |contact|
     #   contact.check_if_naughty_or_nice
@@ -78,38 +87,47 @@ module Selection
   #stupid git     dkwoapmfkwel;   ckdlsmkclsncls knxklsdafjkl SPK
   def find_each(start: 0, batch_size: 100)
 
-    sql = <<-SQL
-    SELECT #{columns.join ","} FROM #{table}
-    LIMIT #{batch_size} OFFSET #{start}
-    SQL
+    total = Entry.count
+    till =0
+    while till< total-1
+      sql = <<-SQL
+      SELECT #{columns.join ","} FROM #{table}
+      LIMIT #{batch_size} OFFSET #{start}
+      SQL
+      puts sql
+      rows = connection.execute(sql)
+      rows =  rows_to_array(rows)
+      rows.each do |x|
+        puts "in da loop"
+        if x == nil
+          break
+          end
+          yield init_object_from_row(x)
 
-    rows = connection.execute(sql)
-    rows.each do |x|
-      yield init_object_from_row(x)
+        end
+        start = start + 100
+      end
+
     end
-  end
 
-  def find_in_batches(start: 0, batch_size: 100)
-    sql = <<-SQL
-    SELECT #{columns.join ","} FROM #{table}
-    LIMIT #{batch_size} OFFSET #{start}
-    SQL
+    def find_in_batches(start: 0, batch_size: 100)
+      sql = <<-SQL
+      SELECT #{columns.join ","} FROM #{table}
+      LIMIT #{batch_size} OFFSET #{start}
+      SQL
 
-    rows = connection.execute(sql)
+      rows = connection.execute(sql)
 
-    # Changes the rows into a set of objects
-    # yield that set resulting from rows_to_arry
-
+      # Changes the rows into a set of objects
+      # yield that set resulting from rows_to_arry
 
 
+      strang = ''
+      y=1
+      #turn into objects using init_object_from_row, then yield the batch
 
 
-    strang = ''
-    y=1
-    #turn into objects using init_object_from_row, then yield the batch
-
-
-    rows.each do |x|
+      rows.each do |x|
 
         yield init_object_from_row(strang)
       end
@@ -264,52 +282,25 @@ module Selection
             args.to_s
             x = x.to_s
             x = x.gsub(/{:/, '')
-            x = x.gsub(/}/, '')
-            arg_ray = x.split('=>:')
-            arg_ray[0] = arg_ray[0].gsub(/,/,'')
-            join(arg_ray[0], arg_ray[1])
+              x = x.gsub(/}/, '')
+              arg_ray = x.split('=>:')
+              arg_ray[0] = arg_ray[0].gsub(/,/,'')
+              join(arg_ray[0], arg_ray[1])
+            end
+          end
+
+          rows_to_array(rows)
+        end
+
+        private
+        def init_object_from_row(row)
+          if row
+            data = Hash[columns.zip(row)]
+            new(data)
           end
         end
 
-        rows_to_array(rows)
-      end
-
-      private
-      def init_object_from_row(row)
-        if row
-          data = Hash[columns.zip(row)]
-          new(data)
+        def rows_to_array(rows)
+          rows.map { |row| new(Hash[columns.zip(row)]) }
         end
       end
-
-      def rows_to_array(rows)
-        rows.map { |row| new(Hash[columns.zip(row)]) }
-      end
-    end
-
-
-    #
-    # Entry.order(:name, {phone_number: :desc})
-    #
-    # SELECT columns
-    # FROM entry
-    # ORDER BY name, phone_number desc
-    #
-    # # or
-    # Entry.order({name: :asc, phone_number: :desc})
-    #
-    # SELECT columns
-    # FROM entry
-    # ORDER BY name asc, phone_number desc
-    #
-    # # or
-    # Entry.order("name ASC, phone_number DESC")
-    #
-    # SELECT columns
-    # FROM entry
-    # ORDER BY name ASC, phone_number DESC
-    #
-    # # or
-    # Entry.order("name ASC", "phone_number DESC")
-    #
-    # ORDER BY name, phone_number desc
