@@ -131,9 +131,12 @@ module Persistence
 
 
     def destroy_all(conditions_hash=nil) #possibly change conditions_hash name
+      puts conditions_hash.class    #this outputs hash,
       case conditions_hash.class
-      when Hash
+      when Hash### Why in all hell am I not getting in here
+          puts "weeeee heeeere"
         if conditions_hash && !conditions_hash.empty?
+          puts "weeeee 1"
           conditions_hash = BlocRecord::Utility.convert_keys(conditions_hash)
           conditions = conditions_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")
 
@@ -142,6 +145,8 @@ module Persistence
           WHERE #{conditions};
           SQL
         else
+
+            puts "weeeee 2"
           connection.execute <<-SQL
           DELETE FROM #{table}
           SQL
