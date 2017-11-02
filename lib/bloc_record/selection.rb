@@ -3,7 +3,6 @@ require 'sqlite3'
 module Selection
 
   def find(*ids)
-
     if ids.length == 1
       find_one(ids.first)
     else
@@ -11,7 +10,6 @@ module Selection
       SELECT #{columns.join ","} FROM #{table}
       WHERE id IN (#{ids.join(",")});
       SQL
-
       rows_to_array(rows)
     end
   end
@@ -22,24 +20,8 @@ module Selection
     SELECT #{columns.join ","} FROM #{table}
     WHERE id = "#{id}";
     SQL
-
-    #row = connection.get_first_row sql
-
-
     init_object_from_row(row)
-
   end
-
-  # def find_by(attribute, value)
-  #   row = connection.get_first_row <<-SQL
-  #   SELECT #{columns.join ","} FROM #{table}
-  #   WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
-  #   SQL
-  #
-  #   init_object_from_row(row)
-  # end
-
-
 
   def method_missing(m, *args, &block)
     matches = m.match(/^find_by_(.*)$/)
@@ -52,41 +34,14 @@ module Selection
   end
 
   def find_by(attribute, value)
-
     row = connection.get_first_row <<-SQL
     SELECT #{columns.join ","} FROM #{table}
     WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
     SQL
-
     init_object_from_row(row)
-
-
-    # puts "find_by_internal"
-    # sql = <<-SQL
-    # SELECT #{columns.join ","} FROM #{table}
-    # WHERE #{attribute} = #{BlocRecord::Utility.sql_strings(value)};
-    # SQL
-    #
-    # rows = connection.execute(sql)
-    # return rows_to_array(rows)
-
-    # Contact.find_each do |contact|
-    #   contact.check_if_naughty_or_nice
-    # end
-    #
-    # Contact.find_each(start: 2000, batch_size: 2000) do |contact|
-    #   contact.check_if_naughty_or_nice
-    # end
-    #
-    # Contact.find_in_batches(start: 4000, batch_size: 2000) do |contacts, batch|
-    #   contacts.each { |contact| contact.check_if_naughty_or_nice }
-    # end
-
   end
-  # I want to submit this for chapter 3
-  #stupid git     dkwoapmfkwel;   ckdlsmkclsncls knxklsdafjkl SPK
-  def find_each(start: 0, batch_size: 100)
 
+  def find_each(start: 0, batch_size: 100)
     total = Entry.count
     till =0
     while till< total-1
@@ -97,18 +52,15 @@ module Selection
       SQL
       puts sql
       rows = connection.execute(sql)
-      # rows =  rows_to_array(rows)
       rows.each do |x|
         puts "in da loop"
         if x == nil
           break
         end
         yield init_object_from_row(x)
-
       end
       start = start + 100
     end
-
   end
 
   def find_in_batches(start: 0, batch_size: 100)
@@ -116,30 +68,13 @@ module Selection
     SELECT #{columns.join ","} FROM #{table}
     LIMIT #{batch_size} OFFSET #{start}
     SQL
-
     rows = connection.execute(sql)
-
-    # Changes the rows into a set of objects
-    # yield that set resulting from rows_to_arry
-
-
     strang = ''
     y=1
-    #turn into objects using init_object_from_row, then yield the batch
-
-
     rows.each do |x|
-
       yield init_object_from_row(x)
     end
     y= 1+y
-
-    # Contact.find_in_batches(start: 4000, batch_size: 2000) do |contacts, batch|
-    #   contacts.each do |contact|
-    #
-    #     contact.check_if_naughty_or_nice
-    #   end
-    # end
   end
 
   def take(num=1)
@@ -149,7 +84,6 @@ module Selection
       ORDER BY random()
       LIMIT #{num};
       SQL
-
       return rows_to_array(rows)
     else
       return  take_one
@@ -162,7 +96,6 @@ module Selection
     ORDER BY random()
     LIMIT 1;
     SQL
-
     init_object_from_row(row)
   end
 
@@ -172,7 +105,6 @@ module Selection
     SELECT #{columns.join ","} FROM #{table}
     ORDER BY id ASC LIMIT 1;
     SQL
-
     init_object_from_row(row)
   end
 
@@ -181,7 +113,6 @@ module Selection
     SELECT #{columns.join ","} FROM #{table}
     ORDER BY id DESC LIMIT 1;
     SQL
-
     init_object_from_row(row)
   end
 
@@ -189,7 +120,6 @@ module Selection
     rows = connection.execute <<-SQL
     SELECT #{columns.join ","} FROM #{table};
     SQL
-
     rows_to_array(rows)
   end
 
@@ -211,7 +141,6 @@ module Selection
     SELECT #{columns.join ","} FROM #{table}
     WHERE #{expression};
     SQL
-
     rows = connection.execute(sql, params)
     rows_to_array(rows)
   end
