@@ -131,8 +131,8 @@ module Persistence
 
 
     def destroy_all(conditions_hash=nil) #possibly change conditions_hash name
-      puts conditions_hash.class    #this outputs hash,
-      case conditions_hash.class
+      puts "Is #{conditions_hash.class} a Hash? #{conditions_hash.class == Hash}"   #this outputs hash
+      case conditions_hash
       when Hash### Why in all hell am I not getting in here
           puts "weeeee heeeere"
         if conditions_hash && !conditions_hash.empty?
@@ -152,12 +152,13 @@ module Persistence
           SQL
         end
       when String
-
+        puts "doing string"
         connection.execute <<-SQL
         DELETE FROM #{table}
         WHERE #{conditions_hash};
         SQL
       when Array
+        puts "doing array"
         condition_string = conditions_hash.join(" ")
         condition_string = condition_string.gsub(/[?]/, '')
         connection.execute <<-SQL
