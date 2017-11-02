@@ -39,11 +39,8 @@ module BlocRecord
     end
 
     def destroy_all
-      ids = self.map(&:id)
-
-      ids.each {|thang|
-        puts thang.name
-      BlocRecord::Persistence.destroy_all(thang.name)
+    self.select{|item|
+      item.class.destroy(item.id)
     }
     end
 
