@@ -26,20 +26,39 @@ module Associations
   end
 
 
-   def belongs_to(association)
-     define_method(association) do
-       association_name = association.to_s
-       row = self.class.connection.get_first_row <<-SQL
-         SELECT * FROM #{association_name}
-         WHERE id = #{self.send(association_name + "_id")}
-       SQL
+  def belongs_to(association)
+    define_method(association) do
+      association_name = association.to_s
+      row = self.class.connection.get_first_row <<-SQL
+      SELECT * FROM #{association_name}
+      WHERE id = #{self.send(association_name + "_id")}
+      SQL
 
-       class_name = association_name.classify.constantize
+      class_name = association_name.classify.constantize
 
-       if row
-         data = Hash[class_name.columns.zip(row)]
-         class_name.new(data)
-       end
-     end
-   end
-end
+      if row
+        data = Hash[class_name.columns.zip(row)]
+        class_name.new(data)
+      end
+    end
+  end
+
+
+
+  def has_one(association)
+    define_method(association) do
+      association_name = association.to_s
+      row = self.class.connection.get_first_row <<-SQL
+      SELECT * FROM #{association_name}
+      WHERE id = #{self.send(association_name + "_id")}
+      SQL
+
+      class_name = association_name.classify.constantize
+
+      if row
+        data = Hash[class_name.columns.zip(row)]
+        class_name.new(data)
+      end
+    end
+  end
+end 

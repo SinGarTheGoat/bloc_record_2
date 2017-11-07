@@ -23,7 +23,7 @@ module Selection
     WHERE id = "#{id}";
     SQL
 
-    #row = connection.get_first_row sql
+    row = connection.get_first_row sql
 
 
     init_object_from_row(row)
@@ -111,6 +111,11 @@ module Selection
 
 
   def first
+    sql_str =<<-SQL
+    SELECT #{columns.join ","} FROM #{table}
+    ORDER BY id ASC LIMIT 1;
+    SQL
+    puts sql_str
     row = connection.get_first_row <<-SQL
     SELECT #{columns.join ","} FROM #{table}
     ORDER BY id ASC LIMIT 1;
